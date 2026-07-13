@@ -125,7 +125,7 @@ dpo/outputs/qwen15_code_lora_grpo_v5
 |---|---|
 | Python 版本 | Python 3.10 |
 | 操作系统 / 服务器环境 | Linux 训练环境优先，本地 Windows 可用于整理结果与文档 |
-| GPU 要求 | 建议使用支持 CUDA 的 GPU；无 GPU 时仅适合调试或阅读结果 |
+| GPU 要求 | 建议使用支持 CUDA 的 GPU |
 | 主要依赖 | `torch`、`transformers`、`datasets`、`peft`、`trl`、`pandas`、`pyarrow` |
 
 ### 4.2 安装步骤
