@@ -1,4 +1,4 @@
-# Group4-Task-A README
+# Group4-Task-A 
 
 ---
 
@@ -364,8 +364,6 @@ python mbpp_eval_tot.py \
 | `comparison.json` | 指标对比脚本 | JSON | 两组实验结果差值 |
 
 ### 7.2 运行截图或结果图例
-
-建议在最终仓库中补充：
 
 - 训练过程截图![运行过程截图](images/运行截图.png)
   
