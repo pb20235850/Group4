@@ -50,7 +50,7 @@
 | A4 偏好对齐训练 | `train_grpo_code.py`、DPO 相关脚本 | Full DPO、LoRA DPO、SimPO、GRPO 训练与评测 | SFT 模型、偏好数据 | 对齐后模型、训练日志、评测结果 |
 | A5 推理增强与统一评测 | `mbpp_eval_*.py` | Best-of-N、Self-Consistency、Reflexion、ToT 与统一自动评测 | 已训练模型、MBPP 测试集 | `metrics.json`、`generations.jsonl`、`cases.jsonl` |
 
-### 2.2 系统架构图或流程图
+### 2.2 系统架构图和流程图
 
 ```mermaid
 flowchart LR
@@ -70,8 +70,6 @@ flowchart LR
 ```
 
 - 系统总体架构图![架构图](images/system_architecture.png)
-- 训练过程截图
-- 多方法结果对比截图
 
 ### 2.3 一次完整任务或实验的流程
 
@@ -257,10 +255,10 @@ python mbpp_eval_tot.py \
 
 建议在最终仓库中补充：
 
-- 训练过程截图
-- 推理增强运行截图
-- 结果对比表截图
-- 最优结果文件截图
+- 训练过程截图![运行过程](images/运行过程.png)
+- 结果对比表截图![训练结果](images/训练结果.png)
+- 推理增强结果截图![推理增强结果](images/推理增强结果.png)
+- 最优结果文件截图![最终结果](images/最终结果.png)
 
 ---
 
