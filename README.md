@@ -170,25 +170,109 @@ pip install jieba nltk rouge_chinese
 
 ## 6. 完整流程 Demo 运行
 
-### 6.1 Demo 样例说明
-
-| Demo | 输入文件 / 输入内容 | 演示目的 |
-|---|---|---|
-| Demo 1：单模型 MBPP 评测 | 本地模型目录 + MBPP 测试集 | 验证基础评测流程 |
-| Demo 2：Best-of-N 推理增强 | GRPO 模型 + MBPP 测试集 | 验证多候选筛选对结果的提升 |
-| Demo 3：Reflexion / ToT | GRPO 模型 + MBPP 测试集 | 验证复杂推理增强策略的收益与成本 |
-
-### 6.2 运行命令
+### 6.1 A1 指令数据构造
 
 ```bash
-# Demo 1：基础评测
+cd /data/yekaiyang/zjx/20260617/assignment_A
+bash sft/scripts/prepare_data.sh
+```
+
+预期输出：
+
+- `sft/data/code_sft_train.json`
+- `sft/data/code_sft_valid.json`
+- `sft/data/code_sft_test.json`
+- `sft/data/dataset_info.json`
+
+### 6.2 A2 SFT 监督微调
+
+```bash
+cd /data/yekaiyang/zjx/20260617/assignment_A
+GPU_ID=0 bash sft/scripts/train.sh
+```
+
+批量预测和评测：
+
+```bash
+MODEL_PATH=sft/outputs/qwen15_code_full_sft bash sft/scripts/predict_full.sh
+bash sft/scripts/evaluate_full.sh
+```
+
+预期输出：
+
+- `sft/outputs/qwen15_code_full_sft`
+- `sft/outputs/qwen15_code_full_predict/generated_predictions.jsonl`
+- `sft/outputs/eval_mbpp/mbpp_metrics.json`
+
+### 6.3 A3 偏好数据构造
+
+```bash
+bash dpo/scripts/prepare_data.sh
+```
+
+小样本调试：
+
+```bash
+MAX_TRAIN_SAMPLES=200 TEST_SIZE=50 bash dpo/scripts/prepare_data.sh
+```
+
+直接运行 Python 脚本：
+
+```bash
+python3 dpo/scripts/prepare_dpo_data.py \
+  --source_dir py-dpo-v0.1 \
+  --output_dir dpo/data \
+  --test_size 500 \
+  --seed 42 \
+  --max_train_samples 0
+```
+
+预期输出：
+
+- `dpo/data/code_dpo_train.json`
+- `dpo/data/code_dpo_test.json`
+- `dpo/data/dataset_info.json`
+
+### 6.4 A4 偏好对齐训练
+
+Full DPO：
+
+```bash
+GPU_ID=0 bash dpo/scripts/train.sh
+```
+
+指定配置：
+
+```bash
+CONFIG=dpo/configs/qwen15_code_full_dpo.yaml GPU_ID=0 bash dpo/scripts/train.sh
+```
+
+GRPO 训练示例：
+
+```bash
+python train_grpo_code.py
+```
+
+A4 中 GRPO 的 reward 设计包括四部分：
+
+- 语法正确性奖励：鼓励生成可解析的 Python 代码。
+- 函数名匹配奖励：鼓励生成与测试用例一致的函数入口。
+- 输出格式奖励：减少 Markdown、解释性文本等无效输出。
+- 单元测试奖励：根据 MBPP 测试通过情况给予主要奖励。
+
+### 6.5 A5 统一评测与推理增强
+
+基础评测：
+
+```bash
 python mbpp_eval_dpo.py \
   --model_path /path/to/model \
   --output_dir ./mbpp_eval_result
 ```
 
+Safe Best-of-N：
+
 ```bash
-# Demo 2：Best-of-N
 python mbpp_eval_dpo_bestofn.py \
   --model_path /path/to/model \
   --output_dir ./mbpp_bestofn_result \
@@ -196,8 +280,18 @@ python mbpp_eval_dpo_bestofn.py \
   --temperature 0.8
 ```
 
+Self-Consistency：
+
 ```bash
-# Demo 3：Reflexion
+python mbpp_eval_dpo_self_consistency.py \
+  --model_path /path/to/model \
+  --output_dir ./mbpp_self_consistency_result \
+  --num_candidates 16
+```
+
+Reflexion：
+
+```bash
 python mbpp_eval_reflexion.py \
   --model_path /path/to/model \
   --output_dir ./mbpp_reflexion_result \
@@ -205,8 +299,9 @@ python mbpp_eval_reflexion.py \
   --repair_attempts 1
 ```
 
+Tree of Thoughts：
+
 ```bash
-# Demo 4：Tree of Thoughts
 python mbpp_eval_tot.py \
   --model_path /path/to/model \
   --output_dir ./mbpp_tot_result \
@@ -216,7 +311,33 @@ python mbpp_eval_tot.py \
   --expand_rounds 1
 ```
 
-### 6.3 关键参数说明
+### 6.6 运行成功判断
+
+运行结束后，输出目录中应包含：
+
+- `mbpp_metrics.json`：汇总指标。
+- `mbpp_generations.jsonl`：每题原始生成结果。
+- `mbpp_cases.jsonl`：每题代码抽取、语法检查和测试执行详情。
+
+`mbpp_metrics.json` 中至少应包含：
+
+- `pass_at_1`
+- `syntax_pass_rate`
+- `avg_test_pass_rate`
+- `passed_tasks`
+- `passed_tests`
+- `num_tasks`
+- `total_tests`
+
+---
+| Demo | 输入文件 / 输入内容 | 演示目的 |
+|---|---|---|
+| Demo 1：单模型 MBPP 评测 | 本地模型目录 + MBPP 测试集 | 验证基础评测流程 |
+| Demo 2：Best-of-N 推理增强 | GRPO 模型 + MBPP 测试集 | 验证多候选筛选对结果的提升 |
+| Demo 3：Reflexion / ToT | GRPO 模型 + MBPP 测试集 | 验证复杂推理增强策略的收益与成本 |
+
+
+### 6.7 关键参数说明
 
 | 参数 | 说明 |
 |---|---|
@@ -227,15 +348,6 @@ python mbpp_eval_tot.py \
 | `--repair_attempts` | Reflexion 修复次数 |
 | `--num_thoughts` | ToT 初始 thought 数 |
 | `--beam_width` | ToT 每轮保留路径宽度 |
-
-### 6.4 运行成功的判断方式
-
-- 终端输出中出现最终 `metrics` 信息且无关键报错。
-- 输出目录中生成：
-  - `mbpp_metrics.json`
-  - `mbpp_generations.jsonl`
-  - `mbpp_cases.jsonl`
-- `mbpp_metrics.json` 中包含 `pass_at_1`、`syntax_pass_rate`、`avg_test_pass_rate` 等字段。
 
 ---
 
