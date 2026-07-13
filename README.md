@@ -100,8 +100,7 @@ flowchart LR
 | 使用模型 | `Qwen1.5-0.5B-Chat` 及其 SFT / DPO / GRPO 变体 |
 | 模型来源 | 课程实验环境提供或本地下载 |
 | 项目内相对路径 | 训练后模型通常位于 `dpo/outputs/...` |
-| 是否需要 GPU | 建议需要 |
-| 是否需要联网运行 | 不需要联网推理，初次准备模型时可能需要 |
+| 是否需要 GPU | 需要 |
 
 在当前项目材料中，常见模型路径包括：
 
@@ -128,7 +127,7 @@ dpo/outputs/qwen15_code_lora_grpo_v5
 
 | 项目 | 要求 |
 |---|---|
-| Python 版本 | Python 3.10+ |
+| Python 版本 | Python 3.10 |
 | 操作系统 / 服务器环境 | Linux 训练环境优先，本地 Windows 可用于整理结果与文档 |
 | GPU 要求 | 建议使用支持 CUDA 的 GPU；无 GPU 时仅适合调试或阅读结果 |
 | 主要依赖 | `torch`、`transformers`、`datasets`、`peft`、`trl`、`pandas`、`pyarrow` |
@@ -137,11 +136,12 @@ dpo/outputs/qwen15_code_lora_grpo_v5
 
 ```bash
 # 创建环境
-conda create -n mbpp python=3.10 -y
-conda activate mbpp
+conda create -n shixun-sft python=3.10 -y
+conda activate shixun-sft
 
 # 安装依赖
-pip install torch transformers datasets peft trl pandas pyarrow
+pip install -e ./LlamaFactory --index-url https://pypi.tuna.tsinghua.edu.cn/simple
+pip install jieba nltk rouge_chinese
 ```
 
 常见环境问题：
